@@ -140,33 +140,21 @@ resource "aws_datazone_environment_blueprint_configuration" "tooling" {
   domain_id                = aws_datazone_domain.demo_domain.id
   environment_blueprint_id = "DefaultDataLake"
   enabled_regions          = [var.aws_region]
+  provisioning_role_arn    = aws_iam_role.domain_execution_role.arn
 
-  provisioning_configurations {
-    lake_formation_configuration {
-      location_registration_role = aws_iam_role.domain_execution_role.arn
-    }
-  }
-
-  regional_parameters {
-    region = var.aws_region
-    parameters = {
+  regional_parameters = {
+    (var.aws_region) = {
       vpcId = var.enable_vpc_b ? aws_vpc.vpc_b[0].id : aws_vpc.vpc_a.id
-      subnetIds = var.enable_vpc_b ? jsonencode([
+      subnetIds = var.enable_vpc_b ? join(",", [
         aws_subnet.vpc_b_private_1[0].id,
         aws_subnet.vpc_b_private_2[0].id
-      ]) : jsonencode([
+      ]) : join(",", [
         aws_subnet.vpc_a_private_1.id,
         aws_subnet.vpc_a_private_2.id
       ])
-      securityGroupIds = var.enable_vpc_b ? jsonencode([
-        aws_security_group.vpc_b_default[0].id
-      ]) : jsonencode([
-        aws_security_group.vpc_a_default.id
-      ])
+      securityGroupIds = var.enable_vpc_b ? aws_security_group.vpc_b_default[0].id : aws_security_group.vpc_a_default.id
     }
   }
-
-  tags = var.tags
 }
 
 # Project-1 (Always in VPC-A)
