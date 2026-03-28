@@ -50,7 +50,8 @@ output "project_2_emr_vpc" {
 
 output "demo_summary" {
   description = "Demo summary showing VPC assignments"
-  value       = var.enable_vpc_b ? <<-EOT
+  value = var.enable_vpc_b ? (
+    <<-EOT
 ========================================
 SMUS NETWORKING DEMO - AFTER UPDATE
 ========================================
@@ -69,7 +70,8 @@ KEY INSIGHT: Project-1 resources stayed in VPC-A!
 Only new Project-2 inherited VPC-B settings.
 ========================================
 EOT
-  : <<-EOT
+  ) : (
+    <<-EOT
 ========================================
 SMUS NETWORKING DEMO - INITIAL STATE
 ========================================
@@ -85,4 +87,5 @@ that Project-1 stays in VPC-A while new
 Project-2 uses VPC-B.
 ========================================
 EOT
+  )
 }
