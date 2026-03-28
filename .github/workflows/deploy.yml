@@ -1,0 +1,57 @@
+name: Deploy SMUS Networking Demo
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform-demo
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./terraform-demo
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ./terraform-demo
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./terraform-demo
+
+      - name: Display Outputs
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform output -json
+        working-directory: ./terraform-demo
