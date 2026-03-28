@@ -50,39 +50,39 @@ output "project_2_emr_vpc" {
 
 output "demo_summary" {
   description = "Demo summary showing VPC assignments"
-  value = var.enable_vpc_b ? <<-EOT
-    ========================================
-    SMUS NETWORKING DEMO - AFTER UPDATE
-    ========================================
-    
-    Domain Tooling Blueprint: NOW USES VPC-B (${aws_vpc.vpc_b[0].id})
-    
-    Project-1 Resources (UNCHANGED):
-      - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
-      - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
-    
-    Project-2 Resources (NEW):
-      - Glue Connection: VPC-B (${aws_vpc.vpc_b[0].id})
-      - EMR Cluster: VPC-B (${aws_vpc.vpc_b[0].id})
-    
-    KEY INSIGHT: Project-1 resources stayed in VPC-A!
-    Only new Project-2 inherited VPC-B settings.
-    ========================================
-  EOT
+  value       = var.enable_vpc_b ? <<-EOT
+========================================
+SMUS NETWORKING DEMO - AFTER UPDATE
+========================================
+
+Domain Tooling Blueprint: NOW USES VPC-B (${aws_vpc.vpc_b[0].id})
+
+Project-1 Resources (UNCHANGED):
+  - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
+  - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
+
+Project-2 Resources (NEW):
+  - Glue Connection: VPC-B (${aws_vpc.vpc_b[0].id})
+  - EMR Cluster: VPC-B (${aws_vpc.vpc_b[0].id})
+
+KEY INSIGHT: Project-1 resources stayed in VPC-A!
+Only new Project-2 inherited VPC-B settings.
+========================================
+EOT
   : <<-EOT
-    ========================================
-    SMUS NETWORKING DEMO - INITIAL STATE
-    ========================================
-    
-    Domain Tooling Blueprint: VPC-A (${aws_vpc.vpc_a.id})
-    
-    Project-1 Resources:
-      - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
-      - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
-    
-    Next: Set enable_vpc_b = true to demonstrate
-    that Project-1 stays in VPC-A while new
-    Project-2 uses VPC-B.
-    ========================================
-  EOT
+========================================
+SMUS NETWORKING DEMO - INITIAL STATE
+========================================
+
+Domain Tooling Blueprint: VPC-A (${aws_vpc.vpc_a.id})
+
+Project-1 Resources:
+  - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
+  - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
+
+Next: Set enable_vpc_b = true to demonstrate
+that Project-1 stays in VPC-A while new
+Project-2 uses VPC-B.
+========================================
+EOT
 }
