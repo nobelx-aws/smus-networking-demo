@@ -135,34 +135,14 @@ resource "aws_datazone_domain" "demo_domain" {
   tags                  = var.tags
 }
 
-# Tooling Blueprint - switches from VPC-A to VPC-B
-resource "aws_datazone_environment_blueprint_configuration" "tooling" {
-  domain_id                = aws_datazone_domain.demo_domain.id
-  environment_blueprint_id = "DefaultDataLake"
-  enabled_regions          = [var.aws_region]
-  provisioning_role_arn    = aws_iam_role.domain_execution_role.arn
-
-  regional_parameters = {
-    (var.aws_region) = {
-      vpcId = var.enable_vpc_b ? aws_vpc.vpc_b[0].id : aws_vpc.vpc_a.id
-      subnetIds = var.enable_vpc_b ? join(",", [
-        aws_subnet.vpc_b_private_1[0].id,
-        aws_subnet.vpc_b_private_2[0].id
-      ]) : join(",", [
-        aws_subnet.vpc_a_private_1.id,
-        aws_subnet.vpc_a_private_2.id
-      ])
-      securityGroupIds = var.enable_vpc_b ? aws_security_group.vpc_b_default[0].id : aws_security_group.vpc_a_default.id
-    }
-  }
-}
+# Note: Blueprint configuration is managed through console/API after domain creation
+# For this demo, we'll use projects directly to demonstrate VPC binding
 
 # Project-1 (Always in VPC-A)
 resource "aws_datazone_project" "project_1" {
   domain_identifier = aws_datazone_domain.demo_domain.id
   name              = "project-1-vpc-a"
   description       = "Project created with VPC-A - will NOT migrate to VPC-B"
-  depends_on        = [aws_datazone_environment_blueprint_configuration.tooling]
 }
 
 resource "aws_glue_connection" "project_1_connection" {
@@ -183,31 +163,7 @@ resource "aws_glue_connection" "project_1_connection" {
   tags = merge(var.tags, { Project = "project-1", VPC = "vpc-a" })
 }
 
-resource "aws_emr_cluster" "project_1_emr" {
-  name          = "project-1-emr-cluster"
-  release_label = "emr-6.15.0"
-  applications  = ["Spark"]
-  service_role  = aws_iam_role.domain_execution_role.arn
-
-  ec2_attributes {
-    subnet_id                         = aws_subnet.vpc_a_private_1.id
-    emr_managed_master_security_group = aws_security_group.vpc_a_default.id
-    emr_managed_slave_security_group  = aws_security_group.vpc_a_default.id
-    instance_profile                  = aws_iam_instance_profile.emr_profile.arn
-  }
-
-  master_instance_group {
-    instance_type = "m5.xlarge"
-  }
-
-  core_instance_group {
-    instance_type  = "m5.xlarge"
-    instance_count = 1
-  }
-
-  tags                              = merge(var.tags, { Project = "project-1", VPC = "vpc-a" })
-  keep_job_flow_alive_when_no_steps = true
-}
+# EMR removed - Glue connections are sufficient to demonstrate VPC binding
 
 # Project-2 (Only created when enable_vpc_b = true, uses VPC-B)
 resource "aws_datazone_project" "project_2" {
@@ -215,7 +171,6 @@ resource "aws_datazone_project" "project_2" {
   domain_identifier = aws_datazone_domain.demo_domain.id
   name              = "project-2-vpc-b"
   description       = "Project created with VPC-B - inherits new network settings"
-  depends_on        = [aws_datazone_environment_blueprint_configuration.tooling]
 }
 
 resource "aws_glue_connection" "project_2_connection" {
@@ -237,32 +192,7 @@ resource "aws_glue_connection" "project_2_connection" {
   tags = merge(var.tags, { Project = "project-2", VPC = "vpc-b" })
 }
 
-resource "aws_emr_cluster" "project_2_emr" {
-  count         = var.enable_vpc_b ? 1 : 0
-  name          = "project-2-emr-cluster"
-  release_label = "emr-6.15.0"
-  applications  = ["Spark"]
-  service_role  = aws_iam_role.domain_execution_role.arn
-
-  ec2_attributes {
-    subnet_id                         = aws_subnet.vpc_b_private_1[0].id
-    emr_managed_master_security_group = aws_security_group.vpc_b_default[0].id
-    emr_managed_slave_security_group  = aws_security_group.vpc_b_default[0].id
-    instance_profile                  = aws_iam_instance_profile.emr_profile.arn
-  }
-
-  master_instance_group {
-    instance_type = "m5.xlarge"
-  }
-
-  core_instance_group {
-    instance_type  = "m5.xlarge"
-    instance_count = 1
-  }
-
-  tags                              = merge(var.tags, { Project = "project-2", VPC = "vpc-b" })
-  keep_job_flow_alive_when_no_steps = true
-}
+# EMR removed - Glue connections are sufficient to demonstrate VPC binding
 
 data "aws_availability_zones" "available" {
   state = "available"

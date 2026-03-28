@@ -28,10 +28,7 @@ output "project_1_glue_connection_vpc" {
   value       = aws_vpc.vpc_a.id
 }
 
-output "project_1_emr_vpc" {
-  description = "Project-1 EMR Cluster VPC"
-  value       = aws_vpc.vpc_a.id
-}
+
 
 output "project_2_id" {
   description = "Project-2 ID (uses VPC-B)"
@@ -43,10 +40,7 @@ output "project_2_glue_connection_vpc" {
   value       = var.enable_vpc_b ? aws_vpc.vpc_b[0].id : "Not created yet"
 }
 
-output "project_2_emr_vpc" {
-  description = "Project-2 EMR Cluster VPC"
-  value       = var.enable_vpc_b ? aws_vpc.vpc_b[0].id : "Not created yet"
-}
+
 
 output "demo_summary" {
   description = "Demo summary showing VPC assignments"
@@ -60,11 +54,9 @@ Domain Tooling Blueprint: NOW USES VPC-B (${aws_vpc.vpc_b[0].id})
 
 Project-1 Resources (UNCHANGED):
   - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
-  - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
 
 Project-2 Resources (NEW):
   - Glue Connection: VPC-B (${aws_vpc.vpc_b[0].id})
-  - EMR Cluster: VPC-B (${aws_vpc.vpc_b[0].id})
 
 KEY INSIGHT: Project-1 resources stayed in VPC-A!
 Only new Project-2 inherited VPC-B settings.
@@ -80,7 +72,6 @@ Domain Tooling Blueprint: VPC-A (${aws_vpc.vpc_a.id})
 
 Project-1 Resources:
   - Glue Connection: VPC-A (${aws_vpc.vpc_a.id})
-  - EMR Cluster: VPC-A (${aws_vpc.vpc_a.id})
 
 Next: Set enable_vpc_b = true to demonstrate
 that Project-1 stays in VPC-A while new
